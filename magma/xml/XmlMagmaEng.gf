@@ -1,3 +1,3 @@
-concrete XmlMagmaEng of XmlMagma = MagmaEng ** XmlMagmaFunctor with (RglXml = RglXmlEng) ** {
+concrete XmlMagmaEng of XmlMagma = MagmaEng, XmlConcr ** XmlMagmaFunctor with (RglXml = RglXmlEng) ** {
 
 }

@@ -1,4 +1,4 @@
 incomplete concrete DollarMathConcr of DollarMath = MagmaFunctor ** {
-    fun
-        dollarmath = "$...$" | "$ . . . $";   -- latter for `-lextext`
+    lin
+        dollarmath = {s = "$...$" | "$ . . . $"};   -- latter for `-lextext`
 }
