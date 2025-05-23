@@ -15,6 +15,10 @@ class Module:
             return self.concrete.get(language)
         return self.concrete
 
+PREFIX = '''--# -path=../magma:../xml:../testlex:../dollarmath
+-- AUTOMATICALLY GENERATED FILE
+
+'''
 
 magma = Module('Magma', {'Eng': 'MagmaEng'}, 'Magma')
 xml = Module('XmlMagma', {'Eng': 'XmlMagmaEng'}, 'X')
@@ -51,11 +55,13 @@ for n in range(1, len(extensions) + 1):
             print(f'    Generating {name}')
 
             with open(directory / f'{name}.gf', 'w') as f:
+                f.write(PREFIX)
                 f.write(f'abstract {name} = ' + ', '.join(mod.abstract for mod in combo) + '\n')
 
             for lang in magma.concrete.keys():
                 concretes = [mod.get_concrete(lang) for mod in combo]
                 if all(concretes):
                     with open(directory / f'{name}{lang}.gf', 'w') as f:
+                        f.write(PREFIX)
                         f.write(f'concrete {name}{lang} of {name} = ' + ', '.join(concretes) + '\n')
 

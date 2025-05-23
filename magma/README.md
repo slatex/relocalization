@@ -15,12 +15,7 @@ The following extensions currently exist:
 
 ## Getting started
 
-Install GF and the RGL.
-Run
-```bash
-gf --path=magma:xml:testlex:dollarmath:combinations
-```
-in the GF shell, run
+Install GF and the RGL, in the GF shell, enter
 ```
 i combinations/DLTenMagmaEng.gf
 gr -cat=Stmt -number=10 | l
