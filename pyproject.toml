@@ -1,0 +1,23 @@
+[build-system]
+requires = ["flit_core >= 3.4"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "flexi"
+version = "0.0.1"
+requires-python = ">= 3.12"
+authors = [{name="Jan Frederik Schaefer"}]
+description = "Library for flexiformal language processing"
+readme = "README.md"
+license.text = "GPLv3"
+
+dependencies = [
+    "lxml",
+    "pgf"
+]
+
+[project.urls]
+Documentation = "https://github.com/slatex/relocalization"
+Repository = "https://github.com/slatex/relocalization"
+Issues = "https://github.com/slatex/relocalization/issues"
+

@@ -10,5 +10,9 @@ It is based on our previous prototypes:
 
 
 
+## Content of this repo
+
+* `magma`: A GF grammar for mathematics
+* `flexi` (under development): A Python library processing flexiformal content.
 
 
