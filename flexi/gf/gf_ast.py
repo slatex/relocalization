@@ -37,8 +37,8 @@ class GfAst:
             label = ""
             while (
                 i < len(s)
-                and s[i].isalnum()
-                or s[i] in {"_", "'", "/", "?", ":", "#", ".", "-"}
+                and (s[i].isalnum()
+                or s[i] in {"_", "'", "/", "?", ":", "#", ".", "-"})
             ):
                 label += s[i]
                 i += 1
