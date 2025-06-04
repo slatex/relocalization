@@ -1,3 +1,9 @@
+"""
+This script populates the ``magma/combinations`` directory.
+
+``.gf`` files in that directory will be removed and regenerated whenever this script is run.
+"""
+
 from pathlib import Path
 from dataclasses import dataclass
 from typing import Optional
@@ -15,27 +21,28 @@ class Module:
             return self.concrete.get(language)
         return self.concrete
 
-PREFIX = '''--# -path=../magma:../xml:../testlex:../dollarmath
+
+PREFIX = """--# -path=../magma:../xml:../testlex:../dollarmath
 -- AUTOMATICALLY GENERATED FILE
 
-'''
+"""
 
-magma = Module('Magma', {'Eng': 'MagmaEng'}, 'Magma')
-xml = Module('XmlMagma', {'Eng': 'XmlMagmaEng'}, 'X')
-dollarmath = Module('DollarMath', 'DollarMathConcr', 'D')
+magma = Module("Magma", {"Eng": "MagmaEng"}, "Magma")
+xml = Module("XmlMagma", {"Eng": "XmlMagmaEng"}, "X")
+dollarmath = Module("DollarMath", "DollarMathConcr", "D")
 
-testlex = Module('TestEngLex', {'Eng': 'TestEngLexConcr'}, 'LTen')
+testlex = Module("TestEngLex", {"Eng": "TestEngLexConcr"}, "LTen")
 
-directory = Path(__file__).parent / 'combinations'
+directory = Path(__file__).parent / "combinations"
 
 
-print('Delete old combinations')
+print("Delete old combinations")
 
-for file in directory.glob('*.gf'):
-    print(f'    Deleting {file}')
+for file in directory.glob("*.gf"):
+    print(f"    Deleting {file}")
     file.unlink()
 
-print('Generating new combinations')
+print("Generating new combinations")
 
 extensions = [xml, dollarmath]
 # lexica cannot be combined with other lexica
@@ -48,20 +55,32 @@ for n in range(1, len(extensions) + 1):
                 combo = list(xcombo) + [lex, magma]
             else:
                 combo = list(xcombo) + [magma]
-            name = ''.join(mod.name for mod in combo)
+            name = "".join(mod.name for mod in combo)
 
-            combo = [magma] + combo[:-1]   # if magma is in front, we get an error (GF bug?)
+            combo = [magma] + combo[
+                :-1
+            ]  # if magma is in front, we get an error (GF bug?)
 
-            print(f'    Generating {name}')
+            print(f"    Generating {name}")
 
-            with open(directory / f'{name}.gf', 'w') as f:
+            with open(directory / f"{name}.gf", "w") as f:
                 f.write(PREFIX)
-                f.write(f'abstract {name} = ' + ', '.join(mod.abstract for mod in combo) + '\n')
+                f.write(
+                    f"abstract {name} = "
+                    + ", ".join(mod.abstract for mod in combo)
+                    + "\n"
+                )
 
+            assert isinstance(magma.concrete, dict)
             for lang in magma.concrete.keys():
-                concretes = [mod.get_concrete(lang) for mod in combo]
+                concretes = [
+                    cm for mod in combo if (cm := mod.get_concrete(lang)) is not None
+                ]
                 if all(concretes):
-                    with open(directory / f'{name}{lang}.gf', 'w') as f:
+                    with open(directory / f"{name}{lang}.gf", "w") as f:
                         f.write(PREFIX)
-                        f.write(f'concrete {name}{lang} of {name} = ' + ', '.join(concretes) + '\n')
-
+                        f.write(
+                            f"concrete {name}{lang} of {name} = "
+                            + ", ".join(concretes)
+                            + "\n"
+                        )

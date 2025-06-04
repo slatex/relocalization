@@ -8,17 +8,24 @@ COMMAND_SEPARATOR = "COMMAND_SEPARATOR===??!<>239'_"
 
 
 class GFShellRaw(object):
-    def __init__(self, gf_path: str, cwd: Optional[str] = None, args: Optional[list[str]] = None):
+    def __init__(
+        self,
+        gf_path: str = "gf",
+        cwd: Optional[str] = None,
+        args: Optional[list[str]] = None,
+    ):
         if args is None:
             args = []
         pipe = os.pipe()
-        self.gf_shell = subprocess.Popen([gf_path, '--run'] + args,
-                                         stdin=subprocess.PIPE,
-                                         stderr=pipe[1],
-                                         stdout=pipe[1],
-                                         text=True,
-                                         cwd=cwd,
-                                         encoding='utf-8')
+        self.gf_shell = subprocess.Popen(
+            [gf_path, "--run"] + args,
+            stdin=subprocess.PIPE,
+            stderr=pipe[1],
+            stdout=pipe[1],
+            text=True,
+            cwd=cwd,
+            encoding="utf-8",
+        )
         self.commandcounter = 0
         self.infile = os.fdopen(pipe[0])
         self.gfoutfd = pipe[1]
@@ -31,14 +38,14 @@ class GFShellRaw(object):
         self.initialOutput = self.__get_output(sep)
 
     def __write_cmd(self, cmd):
-        if not cmd.endswith('\n'):
-            cmd += '\n'
+        if not cmd.endswith("\n"):
+            cmd += "\n"
         self.outfile.write(cmd)
         self.commandcounter += 1
 
     def __write_separator(self):
         sep = COMMAND_SEPARATOR + str(self.commandcounter)
-        self.outfile.write(f"ps \"{sep}\"\n")
+        self.outfile.write(f'ps "{sep}"\n')
         return sep
 
     def __get_output(self, sep):
@@ -47,7 +54,7 @@ class GFShellRaw(object):
         for line in self.infile:
             if line.rstrip() == sep:
                 return output
-            if line != '\n':  # ignore empty lines
+            if line != "\n":  # ignore empty lines
                 output += line
 
     def handle_command(self, cmd: str) -> str:
@@ -60,26 +67,23 @@ class GFShellRaw(object):
 
     def do_shutdown(self):
         """Terminates the GF shell"""
-        self.gf_shell.communicate('q\n', timeout=1)
+        self.gf_shell.communicate("q\n", timeout=1)
         self.outfile.close()
         self.infile.close()
         self.gf_shell.kill()
         os.fdopen(self.gfoutfd).close()  # TODO: Why do I need this?
 
+
 def handle_parse_output(output: str) -> list[str]:
-    if output.startswith('The parser failed at token'):
+    if output.startswith("The parser failed at token"):
         return []
     return output.splitlines()
 
 
 if __name__ == "__main__":
-    from distutils.spawn import find_executable
-
-    path = find_executable('gf')
-    assert path is not None
-    gfShell = GFShellRaw(path)
+    gfShell = GFShellRaw()
     print(gfShell.initialOutput)
-    print('\n------------\n')
+    print("\n------------\n")
     while True:
         line = input("> ")
         print(gfShell.handle_command(line))
