@@ -13,8 +13,10 @@ license.text = "GPLv3"
 
 dependencies = [
     "lxml",
-    "pgf"
 ]
+
+[project.optional-dependencies]
+unclassified = ["pgf"]
 
 [project.urls]
 Documentation = "https://github.com/slatex/relocalization"
