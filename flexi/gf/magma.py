@@ -7,8 +7,6 @@ import subprocess
 import logging
 from pathlib import Path
 
-import pgf   # type: ignore
-
 from flexi.gf.gf_ast import GfAst
 from flexi.gf.gf_shell import GFShellRaw
 
@@ -45,10 +43,14 @@ class ParseError(Exception):
 class MagmaGrammar:
     def __init__(self, name: str, lang: str = 'Eng'):
         self.name = name
-        self.pgf = get_pgf(name)
-        self.concrete = self.pgf.languages[f'{name}{lang}']
+
         # TODO: ideally, we want to only use PGF, but I can't find the sources/a documentation
         # somethings don't work for me (e.g. specifying the start category for parsing)
+        # Furthermore, there seem to be installation issues for some systems
+        # So we use the GF shell for now...
+
+        # self.pgf = get_pgf(name)
+        # self.concrete = self.pgf.languages[f'{name}{lang}']
         self.shell = get_shell(name, lang)
 
     def parse(self, sentence: str, category: str = 'Stmt') -> list[GfAst]:
@@ -82,6 +84,8 @@ def get_shell(name: str, lang: str = 'Eng') -> GFShellRaw:
 
 @functools.cache
 def get_pgf(name: str):
+    import pgf  # type: ignore
+
     pgf_dir = MAGMA_PATH / 'pgf'
     pgf_dir.mkdir(parents=True, exist_ok=True)
     pgf_file = pgf_dir / f'{name}.pgf'
