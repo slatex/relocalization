@@ -15,6 +15,13 @@ dependencies = [
     "lxml",
 ]
 
+[tool.setuptools]
+packages = ["flexi", "magma"]
+
+[tool.setuptools.package-dir]
+flexi = "flexi"
+magma = "magma"
+
 [project.optional-dependencies]
 unclassified = ["pgf"]
 
