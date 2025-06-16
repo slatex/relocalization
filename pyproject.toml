@@ -18,6 +18,9 @@ dependencies = [
 [tool.flit.sdist]
 include = ["magma/"]
 
+[tool.flit.external-data]
+directory = "magma"
+
 [project.optional-dependencies]
 unclassified = ["pgf"]
 
