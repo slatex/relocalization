@@ -15,12 +15,8 @@ dependencies = [
     "lxml",
 ]
 
-[tool.setuptools]
-packages = ["flexi", "magma"]
-
-[tool.setuptools.package-dir]
-flexi = "flexi"
-magma = "magma"
+[tool.flit.sdist]
+include = ["magma/"]
 
 [project.optional-dependencies]
 unclassified = ["pgf"]
