@@ -18,3 +18,6 @@ class TestGrammar(unittest.TestCase):
             with self.subTest(sentence=sentence):
                 readings = grammar.parse(sentence)
                 self.assertEqual(len(readings), num_readings)
+
+if __name__ == '__main__':
+    unittest.main()

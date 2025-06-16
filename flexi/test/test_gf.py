@@ -8,3 +8,6 @@ class TestGF(unittest.TestCase):
         GfAst.from_str("function arg")
         GfAst.from_str("(function arg)")
         self.assertRaises(ValueError, GfAst.from_str, "(function arg")
+
+if __name__ == '__main__':
+    unittest.main()
