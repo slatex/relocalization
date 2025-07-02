@@ -1,5 +1,5 @@
 concrete MagmaEng of Magma =
-    MagmaFunctor with 
+    MagmaFunctor with
         (Syntax=SyntaxEng), (Grammar=GrammarEng), (Symbolic=SymbolicEng), (Extend=ExtendEng)
 ** open ParadigmsEng, ResEng, Prelude, StructuralEng, MorphoEng in {
     oper
@@ -19,7 +19,9 @@ concrete MagmaEng of Magma =
         iff_conj = mkConj "iff";
         iff_conj_v1 = mkConj "if and only if";
         if_conj = mkConj "" "if";
-        
+
+        -- hence = mkAdv "hence";
+
         such_that_named_kind nk s = mkCN nk (lin Adv {s = "such that" ++ s.s});
         such_that_named_kind_v1 nk s = mkCN nk (lin Adv {s = "where" ++ s.s});
         such_that_named_kind_v2 nk s = mkCN nk (lin Adv {s = "with" ++ s.s});

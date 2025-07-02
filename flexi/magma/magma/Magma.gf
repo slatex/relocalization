@@ -17,6 +17,7 @@ abstract Magma = MagmaFormula ** {
         Ident;          -- "f"
         Property;       -- "divisible by 2"
         ArgMarker;      -- "by", "of degree", ...
+        AdvConseq;
 
     fun
         -- polarities
@@ -31,7 +32,13 @@ abstract Magma = MagmaFormula ** {
         iff_conj_v1 : Conj;
         if_conj : Conj;         -- a ⇐ b
         if_then_conj : Conj;    -- a ⇒ b
-        
+
+        -- consequence
+        hence : AdvConseq;
+        therefore : AdvConseq;
+        thus : AdvConseq;
+        consequence : AdvConseq -> Stmt -> Stmt;
+
         -- identifiers
         no_ident : Ident;
         math_ident : Formula -> Ident;

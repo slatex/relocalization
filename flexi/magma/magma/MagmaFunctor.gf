@@ -29,6 +29,7 @@ incomplete concrete MagmaFunctor of Magma = MagmaFormulaConcr ** open Syntax, Gr
         Ident = _Ident;
         Property = AP;
         ArgMarker = Prep;
+        AdvConseq = Adv;
 
     lin
         -- polarities
