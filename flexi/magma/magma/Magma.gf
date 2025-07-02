@@ -8,6 +8,7 @@ abstract Magma = MagmaFormula ** {
         Quantification; -- "some", "every", "at least one"
         Polarity;       -- positive/negative
         Conj;           -- "and", "iff", ...
+        AdvCons;
 
         -- distinction of Kind and PreKind reduces number of readings (properties can only be applied to PreKind, arguments only to Kind)
         PreKind;        -- "bijective function"
