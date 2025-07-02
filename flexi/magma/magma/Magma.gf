@@ -8,6 +8,7 @@ abstract Magma = MagmaFormula ** {
         Quantification; -- "some", "every", "at least one"
         Polarity;       -- positive/negative
         Conj;           -- "and", "iff", ...
+        AdvCons;
 
         -- distinction of Kind and PreKind reduces number of readings (properties can only be applied to PreKind, arguments only to Kind)
         PreKind;        -- "bijective function"
@@ -31,7 +32,12 @@ abstract Magma = MagmaFormula ** {
         iff_conj_v1 : Conj;
         if_conj : Conj;         -- a ⇐ b
         if_then_conj : Conj;    -- a ⇒ b
-        
+
+        therefore : AdvCons;
+        hence : AdvCons;
+        thus : AdvCons;
+        consequence: AdvCons -> Stmt -> Stmt;
+
         -- identifiers
         no_ident : Ident;
         math_ident : Formula -> Ident;

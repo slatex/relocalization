@@ -29,6 +29,7 @@ incomplete concrete MagmaFunctor of Magma = MagmaFormulaConcr ** open Syntax, Gr
         Ident = _Ident;
         Property = AP;
         ArgMarker = Prep;
+        AdvCons = Adv;
 
     lin
         -- polarities
@@ -39,6 +40,12 @@ incomplete concrete MagmaFunctor of Magma = MagmaFormulaConcr ** open Syntax, Gr
         and_conj = and_Conj;
         or_conj = or_Conj;
         if_then_conj = if_then_Conj;
+
+        therefore = mkAdv "therefore";
+        hence = mkAdv "hence";
+        thus = mkAdv "thus";
+
+        consequence adverb statement = lin S {s = adverb.s ++ statement.s};
 
         -- identifiers
         no_ident = {s = ""};
