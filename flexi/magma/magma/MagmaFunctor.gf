@@ -41,12 +41,6 @@ incomplete concrete MagmaFunctor of Magma = MagmaFormulaConcr ** open Syntax, Gr
         or_conj = or_Conj;
         if_then_conj = if_then_Conj;
 
-        therefore = mkAdv "therefore";
-        hence = mkAdv "hence";
-        thus = mkAdv "thus";
-
-        consequence adverb statement = lin S {s = adverb.s ++ statement.s};
-
         -- identifiers
         no_ident = {s = ""};
         math_ident m = {s = m.s};
