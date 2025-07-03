@@ -20,11 +20,11 @@ concrete MagmaEng of Magma =
         iff_conj_v1 = mkConj "if and only if";
         if_conj = mkConj "" "if";
 
-        therefore = mkAdv "therefore";
-        hence = mkAdv "hence";
-        thus = mkAdv "thus";
+        therefore = lin Adv { s = "therefore" };
+        hence = lin Adv { s = "hence" };
+        thus = lin Adv { s = "thus" };
 
-        -- consequence adverb statement = lin S {s = adverb.s ++ statement.s};
+        consequence adverb statement = lin S {s = adverb.s ++ statement.s};
 
         such_that_named_kind nk s = mkCN nk (lin Adv {s = "such that" ++ s.s});
         such_that_named_kind_v1 nk s = mkCN nk (lin Adv {s = "where" ++ s.s});
