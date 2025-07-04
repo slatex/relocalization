@@ -19,12 +19,11 @@ concrete MagmaEng of Magma =
         iff_conj = mkConj "iff";
         iff_conj_v1 = mkConj "if and only if";
         if_conj = mkConj "" "if";
+        even_if_conj = mkConj "even if";
 
-        therefore = lin Adv { s = "therefore" };
-        hence = lin Adv { s = "hence" };
-        thus = lin Adv { s = "thus" };
-
-        consequence adverb statement = lin S {s = adverb.s ++ statement.s};
+        therefore = ParadigmsEng.mkAdv "therefore";
+        hence = ParadigmsEng.mkAdv "hence";
+        thus = ParadigmsEng.mkAdv "thus"; -- lin Adv {s = "thus"}
 
         such_that_named_kind nk s = mkCN nk (lin Adv {s = "such that" ++ s.s});
         such_that_named_kind_v1 nk s = mkCN nk (lin Adv {s = "where" ++ s.s});

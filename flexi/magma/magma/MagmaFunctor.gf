@@ -79,6 +79,9 @@ incomplete concrete MagmaFunctor of Magma = MagmaFormulaConcr ** open Syntax, Gr
         defcore_iff_stmt dc s = mkS iff_conj dc s;
         defcore_iff_stmt_v1 dc s = mkS iff_conj_v1 dc s;
         defcore_if_stmt dc s = mkS if_conj dc s;
+        defcore_even_if_stmt dc s = mkS even_if_conj dc s;
+
+        consequence adverb statement = lin S {s = adverb.s ++ statement.s};
 
         -- statements
         conj_stmt c s1 s2 = mkS c s1 s2;

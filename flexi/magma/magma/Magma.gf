@@ -33,6 +33,7 @@ abstract Magma = MagmaFormula ** {
         iff_conj_v1 : Conj;
         if_conj : Conj;         -- a ⇐ b
         if_then_conj : Conj;    -- a ⇒ b
+        even_if_conj : Conj;
 
         -- consequence
         hence : AdvConseq;
@@ -109,5 +110,6 @@ abstract Magma = MagmaFormula ** {
         -- even though the prescriptivist in me disagrees
         -- I'll keep it separate to avoid generating "if" as a variant of "iff", which some people would consider wrong
         defcore_if_stmt : DefCore -> Stmt -> Def;
+        defcore_even_if_stmt : DefCore -> Stmt -> Def;
 }
 
