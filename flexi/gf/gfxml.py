@@ -162,7 +162,7 @@ def xify(node: etree._Element | str) -> XmlNode:
     return x
 
 
-def get_gfxml_string(shtml: etree._ElementTree) -> tuple[list[XmlNode], str]:
+def get_gfxml_string(shtml: etree._Element) -> tuple[list[XmlNode], str]:
     strings: list[str] = []
 
     nodes: list[XmlNode] = []
@@ -200,7 +200,7 @@ def get_gfxml_string(shtml: etree._ElementTree) -> tuple[list[XmlNode], str]:
         if node.tail:
             strings.append(node.tail)
 
-    _recurse(shtml.getroot())
+    _recurse(shtml)
 
     return nodes, ''.join(strings)
 

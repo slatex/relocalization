@@ -43,7 +43,7 @@ def mast_to_dot(node: MAst) -> str:
             shape = 'diamond'
         elif isinstance(n, mast.MT):
             shape = 'plain'
-        elif isinstance(n, mast.MathSeqArg):
+        elif isinstance(n, mast.MSeq):
             shape = 'star'
             display_val = ''
         else:

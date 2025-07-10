@@ -24,25 +24,8 @@ class ParseError(Exception):
     pass
 
 
-# class M:    # Magma node
-#     match_args = ('node', 'children', 'variant')
-#
-#     def __init__(self, node: str, children: Optional[list['M']] = None, variant: Optional[int] = None):
-#         self.node = node
-#         self.children = children if children is not None else []
-#         self.variant = variant
-#
-#
-#     def equals(self, other: 'M') -> bool:
-#         if not isinstance(other, M):
-#             return False
-#         return (
-#                 self.node == other.node and len(self.children) == len(other.children) and
-#                 all(a.equals(b) for a, b in zip(self.children, other.children))
-#         )
-#
-#     def __repr__(self) -> str:
-#         return f'M({self.node!r}, {self.children!r}, {self.variant!r})'
+class Sentence(list[MAst]):
+    """ A sentence is a list of its possible readings """
 
 
 class MagmaGrammar:
@@ -82,18 +65,18 @@ class MagmaGrammar:
     def parse_to_gfast(self, sentence: str, category: str = 'Sentence') -> list[GfAst]:
         return [GfAst.from_str(line) for line in self.parse_to_aststr(sentence, category)]
 
-    def parse_ftml_to_mast(
+    def parse_ftml_to_sentences(
             self,
-            ftml: etree._ElementTree | Path,
+            ftml: etree._Element | Path,
             fail_on_parse_error: bool = True,
-    ) -> list[list[MAst]]:
+    ) -> list[Sentence]:
         if isinstance(ftml, Path):
-            ftml = etree.parse(StringIO(ftml.read_text()))
+            ftml = etree.parse(StringIO(ftml.read_text())).getroot()
         recovery_info, string = gfxml.get_gfxml_string(ftml)
         sentences = gfxml.sentence_tokenize(string)
-        result: list[list[MAst]] = []
+        result: list[Sentence] = []
         for s in sentences:
-            result.append([])
+            result.append(Sentence())
             try:
                 asts = self.parse_to_aststr(s)
             except ParseError as e:

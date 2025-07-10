@@ -133,7 +133,7 @@ class Formula(MAst):
 
 
 class MSeq(MAst):
-    """ A sequence """
+    """ A sequence (as argument for a flexary operator) """
     __match_args__ = ('children',)
     value: None
 
@@ -300,7 +300,7 @@ def gf_xml_math_to_mast(node: GfXmlNode) -> MAst:
                 if len(no) == 1: # single argument, no grouping needed
                     args2.append(arg)
                 elif no[1:] == '1': # start new group
-                    args2.append(MathSeqArg(no[0], [arg]))
+                    args2.append(MSeq(no[0], [arg]))
                 else: # continue group
                     args2[-1].add_arg(arg)  # type: ignore
             return M(
@@ -333,27 +333,56 @@ def gf_xml_to_mast(node: GfXmlNode) -> MAst:
         case _:
             raise ValueError(f"Unexpected node type: {type(node)}")
 
-def mast_to_gfxml(node: MAst) -> GfXmlNode:
+
+def mast_to_gfxml(node: MAst, args: Optional[dict[str, MAst]] = None) -> GfXmlNode:
+    # args is a dict if we are currently in the instantiation of an M node
     match node:
         case G(value, children):
-            return GfNode(value, [mast_to_gfxml(child) for child in children])
+            return GfNode(value, [mast_to_gfxml(child, args) for child in children])
         case X(tag, children) as x:
-            return XmlNode(tag, [mast_to_gfxml(child) for child in children], x.attrs, x.wrapfun)
+            return XmlNode(tag, [mast_to_gfxml(child, args) for child in children], x.attrs, x.wrapfun)
         case Formula(children) as f:
             return XmlNode(
                 'math',
-                [XmlNode('mrow', [mast_to_gfxml(child) for child in children])],
+                [XmlNode('mrow', [mast_to_gfxml(child, args) for child in children])],
                 wrapfun=f.wrapfun
             )
         case MI(value, children) as m:
             return XmlNode(
                 value,
-                [mast_to_gfxml(child) for child in children],
+                [mast_to_gfxml(child, args) for child in children],
                 m.attrs,
             )
         case MT(value):
             return XmlText(value)
-        # case
+        case M(value, children) as m:
+            new_args = {str(i): child for i, child in enumerate(children, start=1)}
+            return XmlNode(
+                'mrow',
+                [mast_to_gfxml(child, new_args) for child in m.notation_pattern],
+                attrs={'data-ftml-head': value, 'data-ftml-term': 'OMA'},
+            )
+        case MathArg(value):
+            if args is None or value not in args:
+                raise ValueError(f"Missing argument for MathArg: {value}")
+            return mast_to_gfxml(args[value], None)
+        case MathSeqArg(value) as msa:
+            if args is None or value not in args:
+                raise ValueError(f"Missing argument for MathArg: {value}")
+            arg = args[value]
+            assert isinstance(arg, MSeq)
+            if len(arg.children) > 1:
+                assert msa.separator is not None, f"Expected separator for MathSeqArg {value} with multiple children"
+            updated_children: list[MAst] = []
+            for i in range(len(arg.children)):
+                if i > 0 and msa.separator:
+                    updated_children.append(deepcopy(msa.separator.clone()))
+                updated_children.append(arg.children[i])
+            return XmlNode(
+                'mrow',
+                [mast_to_gfxml(child, None) for child in updated_children],
+                attrs={'data-ftml-arg': value},
+            )
         case S() as s:
             return s.to_gfxml()
         case _:

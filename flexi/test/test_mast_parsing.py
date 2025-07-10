@@ -10,12 +10,12 @@ from flexi.gf.magma import MagmaGrammar
 class TestGrammar(unittest.TestCase):
     def test_basic(self):
         grammar = MagmaGrammar('XLTenMagma', 'Eng')
-        masts = grammar.parse_ftml_to_mast(
+        masts = grammar.parse_ftml_to_sentences(
             etree.parse(
                 StringIO(
                     '<p>There is a <emph>node</emph>.</p>'
                 )
-            )
+            ).getroot()
         )
         self.assertEqual(len(masts), 1)
         self.assertGreaterEqual(len(masts[0]), 1)
@@ -31,5 +31,5 @@ class TestGrammar(unittest.TestCase):
                 ftml = etree.parse(
                     TEST_FILE_DIR / 'ftml' / testfile,
                 )
-                masts = grammar.parse_ftml_to_mast(ftml)
+                masts = grammar.parse_ftml_to_sentences(ftml.getroot())
                 self.assertGreater(len(masts), 0, f'No MASTs parsed from {testfile}')
