@@ -23,3 +23,5 @@ Documentation = "https://github.com/slatex/relocalization"
 Repository = "https://github.com/slatex/relocalization"
 Issues = "https://github.com/slatex/relocalization/issues"
 
+[tool.ruff.lint]
+ignore = ["E743"]
