@@ -73,8 +73,10 @@ class XmlNode(GfXmlNode):
         for child in self.children:
             assert isinstance(child, XmlNode) or isinstance(child, XmlText)
             da, db = child.pure_node_strings()
-            a += da
-            b = db + b
+            a += da + db
+            # was:
+            #   a += da
+            #   b = db + b
         return a, b
 
     def __repr__(self):
@@ -166,6 +168,13 @@ def get_gfxml_string(shtml: etree._ElementTree) -> tuple[list[XmlNode], str]:
     nodes: list[XmlNode] = []
 
     def _recurse(node: etree._Element):
+        if isinstance(node, etree._Comment):
+            return
+        if node.attrib.get('data-ftml-invisible', '') == 'true':
+            if node.tail:
+                strings.append(node.tail)
+            return
+
         tag_num = len(nodes)
         if node.tag.endswith('math'):
             # don't recurse into math nodes - place them as-is
@@ -229,10 +238,6 @@ def sentence_tokenize(text: str) -> list[str]:
     tokenizer = PunktSentenceTokenizer()
     sentences: list[str] = []
     for start, end in tokenizer.span_tokenize(without_tags):
-    # for sent in doc.sentences:
-    #     start = sent.words[0].start_char
-    #     end = sent.words[-1].end_char
-
         sentence = ''
         for i in range(start, end):
             for tag in tags[i]:
@@ -261,6 +266,19 @@ def sentence_tokenize(text: str) -> list[str]:
         for itag in reversed(open_tags):
             if itag not in close_tags:
                 sentence = sentence + f'</ {itag} >'
+
+        # strip away outer tags
+        # e.g. < 0 > < 1 > </ 1 > Words </ 0 > -> Words
+        while True:
+            m = (
+                    re.match(r'^\s*(< (?P<i>[0-9]+) >)(?P<sentence>.*?)(</ (?P=i) >\s*)$', sentence)
+                    or re.match(r'^\s*(< (?P<i>[0-9]+) >)\s*(</ (?P=i) >)\s*(?P<sentence>.*?)$', sentence)
+                    or re.match(r'^(?P<sentence>.*?)\s*(< (?P<i>[0-9]+) >)\s*(</ (?P=i) >)\s*$', sentence)
+            )
+            if m:
+                sentence = m.group('sentence')
+            else:
+                break
 
         # post-processing
         sentence = sentence.replace('>', '> ')
@@ -306,10 +324,10 @@ def build_tree(nodes: list[XmlNode], ast_str: str) -> GfXmlNode:
         if tag.lower().startswith('wrap'):
             node = deepcopy(nodes[read_tag()])
             node.wrapfun = tag
-            if tag != 'wrap_math':
-                node.children = [read_node()]
-            else:
+            if tag == 'wrap_math':
                 read_node()
+            else:
+                node.children = [read_node()]
             return node
         else:
             children = []

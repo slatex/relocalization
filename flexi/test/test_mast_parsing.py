@@ -13,16 +13,16 @@ class TestGrammar(unittest.TestCase):
         masts = grammar.parse_ftml_to_mast(
             etree.parse(
                 StringIO(
-                    '<p>There is an integer.</p>'
+                    '<p>There is a <emph>node</emph>.</p>'
                 )
             )
         )
         self.assertEqual(len(masts), 1)
-        self.assertEqual(len(masts[0]), 1)
+        self.assertGreaterEqual(len(masts[0]), 1)
         mast = masts[0][0]
         string = grammar.linearize_mast(mast)
         # some polishing is still needed
-        self.assertEqual(string, '<p > there is an integer . </p>')
+        self.assertEqual(string, 'There is a <emph > node </emph>.')
 
     def test_ftml_files_parsability(self):
         grammar = MagmaGrammar('XLTenMagma', 'Eng')

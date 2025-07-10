@@ -345,6 +345,15 @@ def mast_to_gfxml(node: MAst) -> GfXmlNode:
                 [XmlNode('mrow', [mast_to_gfxml(child) for child in children])],
                 wrapfun=f.wrapfun
             )
+        case MI(value, children) as m:
+            return XmlNode(
+                value,
+                [mast_to_gfxml(child) for child in children],
+                m.attrs,
+            )
+        case MT(value):
+            return XmlText(value)
+        # case
         case S() as s:
             return s.to_gfxml()
         case _:
