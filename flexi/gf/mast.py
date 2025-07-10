@@ -12,7 +12,8 @@ class GfSymb(str):
     def __eq__(self, other) -> bool:
         if not isinstance(other, str):
             return False
-        return str.__eq__(self, other) or (other.startswith('regex:') and re.fullmatch(self, other[len('regex:'):]))
+        return str.__eq__(self, other) or \
+            (other.startswith('regex:') and re.fullmatch(self, other[len('regex:'):]) is not None)
 
 
 class MAst:
@@ -238,7 +239,7 @@ _ANNOS : list[type[S]] = [
 
 
 
-def process_math_sem_node(nodes: list[XmlNode]) -> tuple[list[MAst], list[tuple[str, MAst]]]:
+def process_math_sem_node(nodes: list[GfXmlNode]) -> tuple[list[MAst], list[tuple[str, MAst]]]:
     """ returns (notation, argument values).
     argument values are tuples of (arg_num, arg_value).
     They should be sorted and grouped afterwards (syntactic order may differ from semantic order).
@@ -301,9 +302,9 @@ def gf_xml_math_to_mast(node: GfXmlNode) -> MAst:
                 elif no[1:] == '1': # start new group
                     args2.append(MathSeqArg(no[0], [arg]))
                 else: # continue group
-                    args2[-1].add_arg(arg)
+                    args2[-1].add_arg(arg)  # type: ignore
             return M(
-                x.attrs.get('data-ftml-head'),
+                x.attrs['data-ftml-head'],
                 args2,
                 notations
             )
@@ -319,9 +320,10 @@ def gf_xml_to_mast(node: GfXmlNode) -> MAst:
         case GfNode(value, children):
             return G(value, [gf_xml_to_mast(child) for child in children])
         case XmlNode('math') as m:
-            if len(m.children) == 1 and m.children[0].tag == 'mrow' and not m.children[0].attrs:
+            if len(m.children) == 1 and isinstance(m.children[0], XmlNode) and m.children[0].tag == 'mrow' and not m.children[0].attrs:
                 # swallow bare mrow
                 m = m.children[0]
+            assert m.wrapfun
             return Formula([gf_xml_math_to_mast(child) for child in m.children], m.wrapfun)
         case XmlNode(tag, children, attrs, wrapfun) as x:
             for anno in _ANNOS:

@@ -25,3 +25,4 @@ Issues = "https://github.com/slatex/relocalization/issues"
 
 [tool.ruff.lint]
 ignore = ["E743"]
+

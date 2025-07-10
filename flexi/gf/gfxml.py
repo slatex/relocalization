@@ -37,7 +37,7 @@ from pathlib import Path
 from typing import Callable, Optional
 import re
 
-from nltk import PunktSentenceTokenizer
+from nltk import PunktSentenceTokenizer  # type: ignore
 import nltk
 from copy import deepcopy
 
@@ -51,7 +51,7 @@ def require_nltk_punkt():
 
 class GfXmlNode:
     def to_gf(self) -> tuple[list[tuple[str, str]], str]:
-        _tags = []
+        _tags: list[tuple[str, str]] = []
         return _tags, self._to_gf(_tags)
 
     def _to_gf(self, _tags: list[tuple[str, str]]) -> str:
@@ -71,6 +71,7 @@ class XmlNode(GfXmlNode):
     def pure_node_strings(self) -> tuple[str, str]:
         a, b = f'<{self.tag} ' + ' '.join(f'{k}="{v}"' for k, v in self.attrs.items()) + '>', f'</{self.tag}>'
         for child in self.children:
+            assert isinstance(child, XmlNode) or isinstance(child, XmlText)
             da, db = child.pure_node_strings()
             a += da
             b = db + b
@@ -148,7 +149,7 @@ def xify(node: etree._Element | str) -> XmlNode:
     x = XmlNode(
         tag=node.tag,
         children=[],
-        attrs=node.attrib
+        attrs=node.attrib  # type: ignore
     )
     if node.text and node.text.strip():
         x.children.append(XmlText(node.text))
@@ -178,7 +179,7 @@ def get_gfxml_string(shtml: etree._ElementTree) -> tuple[list[XmlNode], str]:
         nodes.append(XmlNode(
             tag=node.tag,
             children=[],
-            attrs=node.attrib
+            attrs=node.attrib  # type: ignore
         ))
         strings.append(f'< {tag_num} >')
         if node.text:
@@ -203,7 +204,7 @@ def sentence_tokenize(text: str) -> list[str]:
     text = re.sub(r'<m (?P<i>[0-9]+) ></m [0-9]+ >', r'X\g<i>', text)
 
     # we will remove all tags, but remember them to reinsert them later
-    tags = [[]]  # tags[i] is the list of tags that are should be reinserted at position i
+    tags: list[list[str]] = [[]]  # tags[i] is the list of tags that are should be reinserted at position i
     # open_tags = [[]]   # open_tags[i] is the list of tags that are open at position i
     # close_tags = [[]]
     without_tags = ''
@@ -243,23 +244,23 @@ def sentence_tokenize(text: str) -> list[str]:
         open_tags = [int(match.group('i')) for match in re.finditer(r'< (?P<i>\d+) >', sentence)]
         close_tags = [int(match.group('i')) for match in re.finditer(r'</ (?P<i>\d+) >', sentence)]
 
-        for tag in open_tags:
-            if tag not in close_tags and sentence.endswith(f'</ {tag} >'):
-                sentence = sentence[:-len(f'</ {tag} >')]
-        for tag in close_tags:
-            if tag not in open_tags and sentence.startswith(f'< {tag} >'):
-                sentence = sentence[len(f'< {tag} >'):]
+        for itag in open_tags:
+            if itag not in close_tags and sentence.endswith(f'</ {itag} >'):
+                sentence = sentence[:-len(f'</ {itag} >')]
+        for itag in close_tags:
+            if itag not in open_tags and sentence.startswith(f'< {itag} >'):
+                sentence = sentence[len(f'< {itag} >'):]
 
         # add missing tags at the beginning and end (e.g. "This </ 3 > is a sentence" -> "< 3 > This </ 3 > is a sentence")
         open_tags = [int(match.group('i')) for match in re.finditer(r'< (?P<i>\d+) >', sentence)]
         close_tags = [int(match.group('i')) for match in re.finditer(r'</ (?P<i>\d+) >', sentence)]
 
-        for tag in close_tags:
-            if tag not in open_tags:
-                sentence = f'< {tag} >' + sentence
-        for tag in reversed(open_tags):
-            if tag not in close_tags:
-                sentence = sentence + f'</ {tag} >'
+        for itag in close_tags:
+            if itag not in open_tags:
+                sentence = f'< {itag} >' + sentence
+        for itag in reversed(open_tags):
+            if itag not in close_tags:
+                sentence = sentence + f'</ {itag} >'
 
         # post-processing
         sentence = sentence.replace('>', '> ')
@@ -377,7 +378,7 @@ def tree_subst(t: GfXmlNode, a: GfXmlNode, b: GfXmlNode) -> GfXmlNode:
 
 
 def get_outerNodes(t: GfXmlNode, subtree: GfXmlNode) -> list[GfXmlNode]:
-    outer_nodes = []
+    outer_nodes: list[GfXmlNode] = []
     if isinstance(t, GfNode) or isinstance(t, XmlNode):
         if subtree in t.children:
             outer_nodes.append(t)
@@ -387,7 +388,7 @@ def get_outerNodes(t: GfXmlNode, subtree: GfXmlNode) -> list[GfXmlNode]:
     return outer_nodes
 
 
-def get_firstOuterNode(t: GfXmlNode, subtree: GfXmlNode) -> GfXmlNode:
+def get_firstOuterNode(t: GfXmlNode, subtree: GfXmlNode) -> Optional[GfXmlNode]:
     outer_nodes = get_outerNodes(t, subtree)
     return outer_nodes[0] if outer_nodes else None
 
@@ -448,9 +449,11 @@ def parse_mtext_contents(parse_fn: Callable[[str], list[str]], tree: GfXmlNode) 
                     if isinstance(child, XmlText):
                         strings.append(child.text)
                     else:
+                        assert isinstance(child, XmlNode)
                         _recurse2(child)
                 strings.append(f'</ {tag_num} >')
 
+            assert isinstance(e.node, XmlNode)
             for child in e.node.children:
                 if isinstance(child, XmlText):
                     strings.append(child.text)
