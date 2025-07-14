@@ -10,10 +10,10 @@ from pathlib import Path
 from lxml import etree
 from six import StringIO
 
-from flexi.gf import gfxml
-from flexi.gf.gf_ast import GfAst
-from flexi.gf.gf_shell import GFShellRaw
-from flexi.gf.mast import MAst, gf_xml_to_mast, mast_to_gfxml
+from flexi.parsing import gfxml
+from flexi.parsing.gf_ast import GfAst
+from flexi.parsing.gf_shell import GFShellRaw
+from flexi.parsing.mast import MAst, gf_xml_to_mast, mast_to_gfxml
 
 logger = logging.getLogger(__name__)
 
@@ -40,6 +40,13 @@ class MagmaGrammar:
         # self.pgf = get_pgf(name)
         # self.concrete = self.pgf.languages[f'{name}{lang}']
         self.shell = get_shell(name, lang)
+
+    @property
+    def pgf(self):
+        return get_pgf(self.name)
+
+    def get_fun_type(self, fun: str) -> str:
+        return self.pgf.functionType(fun).cat
 
     def parse_to_aststr(self, sentence: str, category: str = 'Sentence',
                         preprocess: bool = True) -> list[str]:

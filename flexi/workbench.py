@@ -9,9 +9,9 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Optional
 
-from flexi.gf import gfxml
-from flexi.gf.magma import MagmaGrammar
-from flexi.gf.mast import MAst
+from flexi.parsing import gfxml
+from flexi.parsing.magma import MagmaGrammar
+from flexi.parsing.mast import MAst
 from flexi.treevis import dot_to_svg, gfxml_tree_to_dot, mast_to_dot
 
 

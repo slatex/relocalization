@@ -1,6 +1,6 @@
 import unittest
 
-from flexi.gf.gf_ast import GfAst
+from flexi.parsing.gf_ast import GfAst
 
 
 class TestGF(unittest.TestCase):

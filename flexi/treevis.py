@@ -1,7 +1,7 @@
 import subprocess
 
-from flexi.gf import gfxml, mast
-from flexi.gf.mast import MAst
+from flexi.parsing import gfxml, mast
+from flexi.parsing.mast import MAst
 
 
 def mast_to_dot(node: MAst) -> str:

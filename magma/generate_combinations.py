@@ -1,7 +1,7 @@
 """
 This script populates the ``magma/combinations`` directory.
 
-``.gf`` files in that directory will be removed and regenerated whenever this script is run.
+``.parsing`` files in that directory will be removed and regenerated whenever this script is run.
 """
 
 from pathlib import Path
@@ -38,7 +38,7 @@ directory = Path(__file__).parent / "combinations"
 
 print("Delete old combinations")
 
-for file in directory.glob("*.gf"):
+for file in directory.glob("*.parsing"):
     print(f"    Deleting {file}")
     file.unlink()
 
@@ -63,7 +63,7 @@ for n in range(1, len(extensions) + 1):
 
             print(f"    Generating {name}")
 
-            with open(directory / f"{name}.gf", "w") as f:
+            with open(directory / f"{name}.parsing", "w") as f:
                 f.write(PREFIX)
                 f.write(
                     f"abstract {name} = "
@@ -77,7 +77,7 @@ for n in range(1, len(extensions) + 1):
                     cm for mod in combo if (cm := mod.get_concrete(lang)) is not None
                 ]
                 if all(concretes):
-                    with open(directory / f"{name}{lang}.gf", "w") as f:
+                    with open(directory / f"{name}{lang}.parsing", "w") as f:
                         f.write(PREFIX)
                         f.write(
                             f"concrete {name}{lang} of {name} = "

@@ -3,9 +3,9 @@ from __future__ import annotations
 import re
 from abc import ABC, abstractmethod
 from copy import deepcopy
-from typing import Any, Optional
+from typing import Any, Optional, Callable, Iterable
 
-from flexi.gf.gfxml import GfXmlNode, GfNode, XmlNode, XmlText
+from flexi.parsing.gfxml import GfXmlNode, GfNode, XmlNode, XmlText
 
 
 class GfSymb(str):
@@ -34,6 +34,35 @@ class MAst:
                 raise ValueError("Child already has a parent")
             child.parent = self
             child.parent_pos = i
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}({self.value!r}, {self.children!r})"
+
+    def __eq__(self, other):
+        return type(self) == type(other) and self.value == other.value and self.children == other.children
+
+
+    def find_children(
+            self,
+            filter: Callable[[MAst], bool],
+            recurse_on_match: bool = True,
+    ) -> Iterable[MAst]:
+        if filter(self):
+            yield self
+            if not recurse_on_match:
+                return
+        for child in self.children:
+            yield from child.find_children(filter, recurse_on_match)
+
+    def find_child(self, filter: Callable[[MAst], bool]) -> Optional[MAst]:
+        return next(iter(self.find_children(filter)))
+
+
+    def parent_iter(self) -> Iterable[MAst]:
+        node = self
+        while node:
+            yield node
+            node = node.parent
 
     def clone(self) -> MAst:
         """ Create a clone of this node. """
@@ -120,6 +149,10 @@ class M(MAst):
             raise TypeError("value must be a string")
         self.notation_pattern = notation_pattern
 
+    def __eq__(self, other):
+        return super().__eq__(other) and self.notation_pattern == other.notation_pattern
+
+
 
 class Formula(MAst):
     """ A formula node (i.e. <math> node) """
@@ -137,6 +170,12 @@ class MSeq(MAst):
     __match_args__ = ('children',)
     value: None
 
+    def add_arg(self, arg: MAst):
+        arg = deepcopy(arg)
+        arg.parent = self
+        arg.parent_pos = len(self.children)
+        self.children.append(arg)
+
 
 class MathArg(MAst):
     """ Argument placeholder (only for notation patterns) """
@@ -146,13 +185,15 @@ class MathArg(MAst):
 class MathSeqArg(MAst):
     """ Argument placeholder for a sequence (only for notation patterns) """
     value: str
-    separator: Optional[MI] = None
+    separator: Optional[list[MI]] = None
 
-    def add_arg(self, arg: MAst):
-        arg = deepcopy(arg)
-        arg.parent = self
-        arg.parent_pos = len(self.children)
-        self.children.append(arg)
+    def __init__(self, value: str, children: Optional[list[MAst]], separator: Optional[list[MAst]] = None):
+        assert children is None, "MathSeqArg should not have children"
+        super().__init__(value, children)
+        self.separator = separator
+
+    def __eq__(self, other):
+        return super().__eq__(other) and self.separator == other.separator
 
 
 class MI(MAst):
@@ -165,6 +206,9 @@ class MI(MAst):
         self.attrs = attrs if attrs is not None else {}
         if not isinstance(value, str):
             raise TypeError("value must be a string")
+
+    def __eq__(self, other):
+        return super().__eq__(other) and self.attrs == other.attrs
 
 
 class MT(MAst):
@@ -185,13 +229,14 @@ class TermRef(S):
         if 'data-ftml-term' not in node.attrs:
             return None
 
+        subnode = node
         child = node.children[0]
-        if isinstance(child, XmlNode) and 'data-ftml-comp' in child.attrs:
-            node = child
+        if len(node.children) == 1 and isinstance(child, XmlNode) and 'data-ftml-comp' in child.attrs:
+            subnode = child
 
         return TermRef(
             node.attrs['data-ftml-head'],
-            [gf_xml_to_mast(child) for child in node.children],
+            [gf_xml_to_mast(child) for child in subnode.children],
             wrapfun=node.wrapfun
         )
 
@@ -255,7 +300,9 @@ def process_math_sem_node(nodes: list[GfXmlNode]) -> tuple[list[MAst], list[tupl
                 assert tag == 'mrow', f"Expected 'mrow' tag for math arg node, got {tag}"
                 argno = node.attrs['data-ftml-arg']
                 notations.append(MathArg(argno))
-                assert len(children) == 1, f"Expected exactly one child for math arg node, got {len(children)}"
+                # assert len(children) == 1, f"Expected exactly one child for math arg node, got {len(children)}"
+                if len(children) > 1:
+                    children = [XmlNode('mrow', children)]  # wrap in mrow if there are multiple children
                 args.append((argno, gf_xml_math_to_mast(children[0])))
             case XmlNode(tag, children) as x:
                 # part of the notation
@@ -282,7 +329,7 @@ def process_math_sem_node(nodes: list[GfXmlNode]) -> tuple[list[MAst], list[tupl
             second = argmarkers[1][0]
             separator = notations[first+1:second]
 
-        notations = notations[:first] + [MathSeqArg(notations[first].value[0], separator)] + notations[last+1:]
+        notations = notations[:first] + [MathSeqArg(notations[first].value[0], None, separator)] + notations[last+1:]
 
     return notations, args
 
@@ -291,8 +338,12 @@ def gf_xml_math_to_mast(node: GfXmlNode) -> MAst:
     match node:
         case XmlText(text):
             return MT(text)
-        case XmlNode('mrow', children) as x if x.attrs.get('data-ftml-term') in {'OMA', 'OMV'}:
-            notations, args = process_math_sem_node(children)
+        case XmlNode('mrow', children) as x if (tp := x.attrs.get('data-ftml-term')) in {'OMA', 'OMV'}:
+            if tp == 'OMA':
+                notations, args = process_math_sem_node(children)
+            else:
+                args = []
+                notations = [gf_xml_math_to_mast(child) for child in children]
             # sort and group args (quick hack; lacks robustness and error checks)
             args.sort(key=lambda x: (int(x[0][0]), int(x[0][1:] or '0')))
             args2 = []
@@ -376,7 +427,7 @@ def mast_to_gfxml(node: MAst, args: Optional[dict[str, MAst]] = None) -> GfXmlNo
             updated_children: list[MAst] = []
             for i in range(len(arg.children)):
                 if i > 0 and msa.separator:
-                    updated_children.append(deepcopy(msa.separator.clone()))
+                    updated_children.extend(deepcopy(msa.separator))  # separator is a list of MI nodes
                 updated_children.append(arg.children[i])
             return XmlNode(
                 'mrow',

@@ -4,7 +4,7 @@ from io import StringIO
 from lxml import etree
 
 from flexi.config import TEST_FILE_DIR
-from flexi.gf.magma import MagmaGrammar
+from flexi.parsing.magma import MagmaGrammar
 
 
 class TestGrammar(unittest.TestCase):

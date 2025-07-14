@@ -1,6 +1,6 @@
 import unittest
 
-from flexi.gf.magma import MagmaGrammar
+from flexi.parsing.magma import MagmaGrammar
 
 
 class TestGrammar(unittest.TestCase):
